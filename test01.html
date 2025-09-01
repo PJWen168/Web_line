@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8">
-  <title>LIFF ID 測試頁面</title>
+  <title>LIFF 測試頁面 - 除錯用</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -10,52 +10,68 @@
       background-color: #f0f0f0;
     }
     h1 { text-align: center; }
-    #lineIdBox {
-      margin-top: 50px;
+    #logBox {
+      margin-top: 30px;
       padding: 20px;
       background: #fff;
       border-radius: 10px;
       box-shadow: 0px 4px 10px rgba(0,0,0,0.1);
-      text-align: center;
-      font-size: 18px;
+      font-size: 16px;
+      white-space: pre-wrap; /* 保留換行 */
+    }
+    button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 16px;
+      border-radius: 5px;
+      cursor: pointer;
     }
   </style>
   <script src="https://static.line-scdn.net/liff/edge/2.25/sdk.js"></script>
 </head>
 <body>
-  <h1>LIFF 測試頁面</h1>
-  <div id="lineIdBox">正在取得 LINE ID...</div>
+  <h1>LIFF 測試頁面 - 除錯用</h1>
+  <div id="logBox">初始化中...</div>
+  <button onclick="initLiff()">重新初始化 LIFF</button>
 
   <script>
+    const logBox = document.getElementById("logBox");
+
+    function log(msg) {
+      console.log(msg);
+      logBox.textContent += msg + "\n";
+    }
+
     async function initLiff() {
+      logBox.textContent = ""; // 每次初始化清空
+      log("開始初始化 LIFF...");
+
       try {
         await liff.init({ liffId: "2008025746-7Xa9XOoj" }); // 替換成你的 LIFF ID
+        log("LIFF 初始化成功");
 
         if (!liff.isLoggedIn()) {
+          log("使用者尚未登入，導向 LINE Login...");
           liff.login({ redirectUri: window.location.href });
           return;
+        } else {
+          log("使用者已登入");
         }
 
         const profile = await liff.getProfile();
         const lineId = profile.userId;
         const displayName = profile.displayName;
 
-        console.log("使用者 LINE ID:", lineId);
-        console.log("使用者名稱:", displayName);
-
-        // 將結果直接顯示在頁面上
-        const box = document.getElementById("lineIdBox");
-        box.innerHTML = `
-          <p>LINE ID: <strong>${lineId}</strong></p>
-          <p>使用者名稱: <strong>${displayName}</strong></p>
-        `;
+        log("取得使用者資料成功");
+        log("LINE ID: " + lineId);
+        log("使用者名稱: " + displayName);
 
       } catch (err) {
-        console.error("LIFF 初始化錯誤:", err);
-        document.getElementById("lineIdBox").textContent = "無法取得 LINE ID，請確認 LIFF 設定。";
+        log("LIFF 初始化錯誤: " + err);
       }
     }
 
+    // 頁面載入時初始化
     window.onload = initLiff;
   </script>
 </body>
