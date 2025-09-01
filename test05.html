@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>LIFF 單頁測試</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background-color: #f0f0f0;
+    }
+    h1 { text-align: center; }
+    #logBox {
+      margin-top: 20px;
+      padding: 15px;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      white-space: pre-wrap;
+    }
+    button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 16px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>LIFF 單頁測試</h1>
+  <button id="initBtn">初始化 LIFF</button>
+  <div id="logBox">等待操作...</div>
+
+  <!-- LIFF SDK -->
+  <script src="https://static.line-scdn.net/liff/edge/2.25/sdk.js"></script>
+
+  <script>
+    const logBox = document.getElementById("logBox");
+    const initBtn = document.getElementById("initBtn");
+
+    function log(msg) {
+      console.log(msg);
+      logBox.textContent += msg + "\n";
+    }
+
+    async function initLiff() {
+      logBox.textContent = "初始化 LIFF...\n";
+
+      if (!window.liff) {
+        log("LIFF SDK 尚未加載，請使用 LINE App 或 HTTPS 頁面開啟");
+        return;
+      }
+
+      try {
+        await liff.init({ liffId: "你的 LIFF ID" });
+        log("LIFF 初始化成功");
+
+        if (!liff.isLoggedIn()) {
+          log("使用者尚未登入，導向登入...");
+          liff.login({ redirectUri: window.location.href });
+          return;
+        }
+
+        log("使用者已登入，取得 profile...");
+        const profile = await liff.getProfile();
+        log("LINE ID (userId): " + profile.userId);
+        log("使用者名稱: " + profile.displayName);
+        if (profile.pictureUrl) log("頭像 URL: " + profile.pictureUrl);
+
+      } catch (err) {
+        log("LIFF 初始化錯誤: " + err);
+      }
+    }
+
+    initBtn.addEventListener("click", initLiff);
+
+    // 若想自動初始化，可解除註解
+    // window.addEventListener("load", initLiff);
+  </script>
+</body>
+</html>
