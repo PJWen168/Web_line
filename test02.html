@@ -2,10 +2,10 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8">
-  <title>LINE OAuth2 測試2</title>
+  <title>LINE OAuth2 測試3</title>
 </head>
 <body>
-  <h1>LINE OAuth2 測試2</h1>
+  <h1>LINE OAuth2 測試3</h1>
   <button id="loginBtn">LINE 登入</button>
   <div id="logBox"></div>
 
@@ -17,7 +17,7 @@
     }
 
     document.getElementById("loginBtn").addEventListener("click", () => {
-      const clientId = "2008022060";
+      const clientId = "2008025746";
       const redirectUri = encodeURIComponent(window.location.href);
       const state = Math.random().toString(36).substring(2);
       const scope = "openid%20profile";
