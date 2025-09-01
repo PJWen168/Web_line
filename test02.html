@@ -2,90 +2,42 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8">
-  <title>LIFF 測試頁面 - 完整除錯</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 30px;
-      background-color: #f0f0f0;
-    }
-    h1 { text-align: center; }
-    #logBox {
-      margin-top: 30px;
-      padding: 20px;
-      background: #fff;
-      border-radius: 10px;
-      box-shadow: 0px 4px 10px rgba(0,0,0,0.1);
-      font-size: 16px;
-      white-space: pre-wrap;
-    }
-    button {
-      margin-top: 20px;
-      padding: 10px 20px;
-      font-size: 16px;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-  </style>
+  <title>LINE OAuth2 測試</title>
 </head>
 <body>
-  <h1>LIFF 測試頁面 - 完整除錯</h1>
-  <div id="logBox">等待初始化 LIFF...</div>
-  <button id="reloadBtn">重新初始化 LIFF</button>
-
-  <!-- LIFF SDK 放在使用前 -->
-  <script src="https://static.line-scdn.net/liff/edge/2.25/sdk.js"></script>
+  <h1>LINE OAuth2 測試</h1>
+  <button id="loginBtn">LINE 登入</button>
+  <div id="logBox"></div>
 
   <script>
     const logBox = document.getElementById("logBox");
-    const reloadBtn = document.getElementById("reloadBtn");
 
     function log(msg) {
-      console.log(msg);
-      logBox.textContent += msg + "\n";
+      logBox.innerHTML += msg + "<br>";
     }
 
-    async function initLiff() {
-      logBox.textContent = "開始初始化 LIFF...\n";
+    document.getElementById("loginBtn").addEventListener("click", () => {
+      const clientId = "你的LINE Login Channel ID";
+      const redirectUri = encodeURIComponent(window.location.href);
+      const state = Math.random().toString(36).substring(2);
+      const scope = "openid%20profile";
 
-      // 等待 SDK 載入
-      if (!window.liff) {
-        log("LIFF SDK 尚未加載！請確認網頁使用 HTTPS 或在 LINE App 開啟");
-        return;
-      }
+      const authUrl = `https://access.line.me/oauth2/v2.1/authorize?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}&state=${state}&scope=${scope}`;
+      log("導向 LINE 授權頁: " + authUrl);
+      window.location.href = authUrl;
+    });
 
-      try {
-        log("呼叫 liff.init() ...");
-        await liff.init({ liffId: "2008025746-7Xa9XOoj" }); // 替換成你的 LIFF ID
-        log("LIFF 初始化成功");
+    // 當頁面回到 redirect_uri 時
+    const urlParams = new URLSearchParams(window.location.search);
+    const code = urlParams.get("code");
+    const state = urlParams.get("state");
 
-        if (!liff.isLoggedIn()) {
-          log("使用者尚未登入，導向 LINE Login...");
-          liff.login({ redirectUri: window.location.href });
-          return;
-        } else {
-          log("使用者已登入");
-        }
-
-        log("呼叫 liff.getProfile() 取得使用者資料...");
-        const profile = await liff.getProfile();
-        const lineId = profile.userId;
-        const displayName = profile.displayName;
-
-        log("取得使用者資料成功");
-        log("LINE ID: " + lineId);
-        log("使用者名稱: " + displayName);
-
-      } catch (err) {
-        log("LIFF 初始化錯誤: " + err);
-      }
+    if (code) {
+      log("授權碼 code: " + code);
+      log("state: " + state);
+      log("此時需要使用 server 端 POST 交換 access token 才能取得 LINE ID (sub)");
+      log("後端交換 token 後，可從 id_token 解碼取得 LINE ID");
     }
-
-    // 重新初始化按鈕
-    reloadBtn.addEventListener("click", initLiff);
-
-    // 等待 DOM 完全解析後再初始化
-    window.addEventListener("load", initLiff);
   </script>
 </body>
 </html>
