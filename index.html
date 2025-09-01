@@ -66,15 +66,20 @@
     // 檢查使用者
     async function initLiff() {
       try {
-        await liff.init({ liffId: "2008025746-7Xa9XOoj" }); // 替換成你的 LIFF ID
+        await liff.init({ liffId: "你的LIFF_ID" });
+    
         if (!liff.isLoggedIn()) {
-          liff.login(); // 如果尚未登入，導向 LINE 登入
+          liff.login({ redirectUri: window.location.href });
           return;
-        } else {
-          const profile = await liff.getProfile();
-          lineId = profile.userId; // 取得 LINE Bot userId
-          checkUser(lineId);
         }
+    
+        const profile = await liff.getProfile();
+        lineId = profile.userId;
+        console.log("使用者 LINE ID:", lineId);
+    
+        // 呼叫後端 API 判斷是否已註冊
+        checkUser(lineId);
+    
       } catch (err) {
         console.error("LIFF 初始化錯誤:", err);
         alert("無法取得 LINE ID，請確認 LIFF 設定。");
@@ -159,3 +164,4 @@
   </script>
 </body>
 </html>
+
