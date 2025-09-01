@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LIFF 註冊頁</title>
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f9f9f9;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .register-container {
+      background: #fff;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0px 4px 10px rgba(0,0,0,0.1);
+      width: 350px;
+    }
+    h2 { text-align: center; margin-bottom: 20px; }
+    label { font-weight: bold; display: block; margin-top: 10px; }
+    input {
+      width: 95%;
+      padding: 10px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 16px;
+    }
+    .submit-btn {
+      width: 100%;
+      padding: 12px;
+      margin-top: 20px;
+      background-color: #007bff;
+      border: none;
+      color: white;
+      font-size: 16px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .submit-btn:hover { background-color: #0056b3; }
+    #logBox {
+      margin-top: 10px;
+      padding: 10px;
+      background: #eee;
+      border-radius: 5px;
+      font-size: 14px;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+
+<div class="register-container" id="registerBox" style="display:none;">
+  <h2>新用戶註冊</h2>
+  <form onsubmit="registerUser(event)">
+    <label>姓名</label>
+    <input type="text" id="name" required>
+
+    <label>手機號碼</label>
+    <input type="tel" id="phone" required>
+
+    <button type="submit" class="submit-btn">註冊</button>
+  </form>
+  <div id="logBox">初始化 LIFF...</div>
+</div>
+
+<script>
+  const logBox = document.getElementById('logBox');
+  const registerBox = document.getElementById('registerBox');
+  let lineId = null;
+
+  function log(msg) {
+    console.log(msg);
+    logBox.textContent += msg + "\n";
+  }
+
+  async function initLiff() {
+    logBox.textContent = "初始化 LIFF...\n";
+
+    if (!window.liff) {
+      log("LIFF SDK 尚未加載！");
+      return;
+    }
+
+    try {
+      await liff.init({ liffId: 'YOUR_LIFF_ID' });
+      log("LIFF 初始化成功");
+
+      if (!liff.isLoggedIn()) {
+        log("使用者尚未登入，導向登入...");
+        liff.login({ redirectUri: window.location.href });
+        return;
+      }
+
+      log("使用者已登入，取得 profile...");
+      const profile = await liff.getProfile();
+      lineId = profile.userId;
+      log("LINE ID: " + lineId);
+      log("使用者名稱: " + profile.displayName);
+
+      // 呼叫後端檢查是否已註冊
+      checkUser(lineId);
+
+    } catch (err) {
+      log("LIFF 初始化錯誤: " + err);
+      alert("無法取得 LINE ID，請確認 LIFF 設定。");
+    }
+  }
+
+  async function checkUser(lineId) {
+    try {
+      const res = await fetch(`http://115.179.109.60:8888/api/users?line_id=${lineId}`);
+      if (res.status === 404) {
+        log("查無使用者 → 顯示註冊表單");
+        registerBox.style.display = 'block';
+        return;
+      }
+      if (!res.ok) throw new Error("查詢失敗，狀態碼：" + res.status);
+      const data = await res.json();
+      if (data.data) {
+        log("使用者已存在: " + data.data.name);
+        alert("歡迎回來，" + data.data.name + "！");
+        window.location.href = "http://115.179.109.60:8888/static/index2.html";
+      } else {
+        log("API 回傳格式異常");
+        registerBox.style.display = 'block';
+      }
+    } catch (err) {
+      log("查詢錯誤: " + err);
+      alert("查詢使用者時發生錯誤！");
+    }
+  }
+
+  async function registerUser(e) {
+    e.preventDefault();
+    const name = document.getElementById('name').value;
+    const phone = document.getElementById('phone').value;
+
+    const payload = { line_id: lineId, name, phone };
+
+    try {
+      const res = await fetch("http://115.179.109.60:8888/api/users/register/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      if (!res.ok) throw new Error("註冊失敗！");
+      const data = await res.json();
+      if (data.user_id) {
+        localStorage.setItem("user_id", data.user_id);
+        localStorage.setItem("user_name", data.name);
+        localStorage.setItem("user_phone", data.phone);
+        alert("註冊成功！");
+        window.location.href = "http://115.179.109.60:8888/static/index2.html";
+      } else {
+        alert("註冊回傳資料錯誤：" + JSON.stringify(data));
+      }
+    } catch (err) {
+      log("註冊錯誤: " + err);
+      alert("網路錯誤，請稍後再試！");
+    }
+  }
+
+  window.onload = initLiff;
+</script>
+
+</body>
+</html>
