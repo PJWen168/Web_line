@@ -67,19 +67,19 @@
     async function initLiff() {
       try {
         await liff.init({ liffId: "2008025746-7Xa9XOoj" });
-    
+
         if (!liff.isLoggedIn()) {
           liff.login({ redirectUri: window.location.href });
           return;
         }
-    
+
         const profile = await liff.getProfile();
         lineId = profile.userId;
         console.log("使用者 LINE ID:", lineId);
-    
+
         // 呼叫後端 API 判斷是否已註冊
         checkUser(lineId);
-    
+
       } catch (err) {
         console.error("LIFF 初始化錯誤:", err);
         alert("無法取得 LINE ID，請確認 LIFF 設定。");
@@ -89,7 +89,7 @@
     window.onload = initLiff;
 
     function checkUser(lineId) {
-      fetch(`http://127.0.0.1:8000/api/users?line_id=${lineId}`)
+      fetch(`http://115.179.109.60:8888/api/users?line_id=${lineId}`)
         .then(res => {
           if (res.status === 404) {
             // 查無使用者 → 顯示註冊表單
@@ -131,7 +131,7 @@
         phone: phone
       };
 
-      fetch("http://127.0.0.1:8000/api/users/register/", {
+      fetch("http://115.179.109.60:8888/api/users/register/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
@@ -164,5 +164,3 @@
   </script>
 </body>
 </html>
-
-
