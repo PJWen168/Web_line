@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8">
-  <title>LIFF 測試頁面2 - 除錯用</title>
+  <title>LIFF 測試頁面 - 完整除錯</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -17,7 +17,7 @@
       border-radius: 10px;
       box-shadow: 0px 4px 10px rgba(0,0,0,0.1);
       font-size: 16px;
-      white-space: pre-wrap; /* 保留換行 */
+      white-space: pre-wrap;
     }
     button {
       margin-top: 20px;
@@ -27,15 +27,18 @@
       cursor: pointer;
     }
   </style>
-  <script src="https://static.line-scdn.net/liff/edge/2.25/sdk.js"></script>
 </head>
 <body>
-  <h1>LIFF 測試頁面2 - 除錯用</h1>
-  <div id="logBox">初始化中...</div>
-  <button onclick="initLiff()">重新初始化 LIFF</button>
+  <h1>LIFF 測試頁面 - 完整除錯</h1>
+  <div id="logBox">等待初始化...</div>
+  <button id="reloadBtn">重新初始化 LIFF</button>
+
+  <!-- LIFF SDK 必須放在使用前 -->
+  <script src="https://static.line-scdn.net/liff/edge/2.25/sdk.js"></script>
 
   <script>
     const logBox = document.getElementById("logBox");
+    const reloadBtn = document.getElementById("reloadBtn");
 
     function log(msg) {
       console.log(msg);
@@ -43,10 +46,15 @@
     }
 
     async function initLiff() {
-      logBox.textContent = ""; // 每次初始化清空
-      log("開始初始化 LIFF...");
+      logBox.textContent = "開始初始化 LIFF...\n";
+
+      if (!window.liff) {
+        log("LIFF SDK 尚未加載！");
+        return;
+      }
 
       try {
+        log("呼叫 liff.init()...");
         await liff.init({ liffId: "2008025746-7Xa9XOoj" }); // 替換成你的 LIFF ID
         log("LIFF 初始化成功");
 
@@ -58,6 +66,7 @@
           log("使用者已登入");
         }
 
+        log("呼叫 liff.getProfile() 取得使用者資料...");
         const profile = await liff.getProfile();
         const lineId = profile.userId;
         const displayName = profile.displayName;
@@ -71,8 +80,11 @@
       }
     }
 
-    // 頁面載入時初始化
-    window.onload = initLiff;
+    // 重新初始化按鈕
+    reloadBtn.addEventListener("click", initLiff);
+
+    // 頁面 DOM 完全解析後初始化
+    document.addEventListener("DOMContentLoaded", initLiff);
   </script>
 </body>
 </html>
