@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>LIFF ID 測試頁面</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 30px;
+      background-color: #f0f0f0;
+    }
+    h1 { text-align: center; }
+    #lineIdBox {
+      margin-top: 50px;
+      padding: 20px;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0px 4px 10px rgba(0,0,0,0.1);
+      text-align: center;
+      font-size: 18px;
+    }
+  </style>
+  <script src="https://static.line-scdn.net/liff/edge/2.25/sdk.js"></script>
+</head>
+<body>
+  <h1>LIFF 測試頁面</h1>
+  <div id="lineIdBox">正在取得 LINE ID...</div>
+
+  <script>
+    async function initLiff() {
+      try {
+        await liff.init({ liffId: "2008025746-7Xa9XOoj" }); // 替換成你的 LIFF ID
+
+        if (!liff.isLoggedIn()) {
+          liff.login({ redirectUri: window.location.href });
+          return;
+        }
+
+        const profile = await liff.getProfile();
+        const lineId = profile.userId;
+        const displayName = profile.displayName;
+
+        console.log("使用者 LINE ID:", lineId);
+        console.log("使用者名稱:", displayName);
+
+        // 將結果直接顯示在頁面上
+        const box = document.getElementById("lineIdBox");
+        box.innerHTML = `
+          <p>LINE ID: <strong>${lineId}</strong></p>
+          <p>使用者名稱: <strong>${displayName}</strong></p>
+        `;
+
+      } catch (err) {
+        console.error("LIFF 初始化錯誤:", err);
+        document.getElementById("lineIdBox").textContent = "無法取得 LINE ID，請確認 LIFF 設定。";
+      }
+    }
+
+    window.onload = initLiff;
+  </script>
+</body>
+</html>
