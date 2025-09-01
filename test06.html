@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LIFF 測試頁面</title>
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      padding: 20px;
+      background-color: #f4f4f9;
+    }
+    h1 {
+      text-align: center;
+    }
+    #loginBtn {
+      display: block;
+      width: 200px;
+      margin: 20px auto;
+      padding: 10px;
+      background-color: #00c300;
+      color: white;
+      text-align: center;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    #profile {
+      margin-top: 20px;
+      padding: 15px;
+      background-color: white;
+      border-radius: 5px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+    #profile img {
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+    }
+    #profile div {
+      margin-left: 70px;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>LIFF 測試頁面</h1>
+  <button id="loginBtn">登入 LINE</button>
+
+  <div id="profile" style="display: none;">
+    <img id="profilePic" src="" alt="Profile Picture">
+    <div>
+      <p><strong>LINE ID:</strong> <span id="userId"></span></p>
+      <p><strong>顯示名稱:</strong> <span id="displayName"></span></p>
+      <p><strong>電子郵件:</strong> <span id="email"></span></p>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('loginBtn').addEventListener('click', function() {
+      if (!window.liff) {
+        alert('LIFF SDK 尚未加載！');
+        return;
+      }
+
+      liff.init({ liffId: 'YOUR_LIFF_ID' })
+        .then(() => {
+          if (!liff.isLoggedIn()) {
+            liff.login();
+          } else {
+            liff.getProfile()
+              .then(profile => {
+                document.getElementById('profile').style.display = 'block';
+                document.getElementById('profilePic').src = profile.pictureUrl;
+                document.getElementById('userId').textContent = profile.userId;
+                document.getElementById('displayName').textContent = profile.displayName;
+                document.getElementById('email').textContent = profile.email || '未提供';
+              })
+              .catch(err => {
+                alert('取得使用者資料失敗: ' + err);
+              });
+          }
+        })
+        .catch(err => {
+          alert('LIFF 初始化錯誤: ' + err);
+        });
+    });
+  </script>
+
+</body>
+</html>
